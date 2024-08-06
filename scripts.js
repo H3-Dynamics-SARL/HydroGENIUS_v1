@@ -116,6 +116,8 @@ function computeModel() {
     const dGPU_OpD = parseInt(document.getElementById('dGPU_OpD').value);
     const REPfleet = parseFloat(document.getElementById('REPfleet').value);
 
+    console.log('Inputs:', { airportCountry, wacc, GPU_fleet, dGPU_OpH, dGPU_OpD, REPfleet });
+
     const countryData = {
         'Spain': { price: 0.186, CO2: 178 },
         'France': { price: 0.156, CO2: 74 }
@@ -124,53 +126,163 @@ function computeModel() {
     const countries = Object.keys(countryData);
     const countryMatrix = countries.map(country => [countryData[country].price, countryData[country].CO2]);
 
-    const years = [2025, 2026, 2027, 2028, 2029, 2030];
-
-    const assumptions_gse_h2_gpu_h2_consumption = 4.3;
-    const assumptions_gse_h2_gpu_h2_price = [350000, 260000, 240000, 220000, 200000, 180000];
-    const assumptions_gse_h2_gpu_stack_price = 0.165;
-    const assumptions_gse_h2_gpu_lifespan = 20000;
-    const assumptions_gse_h2_gpu_maintenance_cost = 0.027;
-    
-    const assumptions_GSE_diesel_GPU_diesel_consumption = 20;
-    const assumptions_GSE_diesel_GPU_price = 70000;
-    const assumptions_GSE_diesel_GPU_lifespan = 20000;
-    const assumptions_GSE_diesel_GPU_maitenance_cost = 0.15;
-    const assumptions_GSE_diesel_GPU_full_depreciation = assumptions_GSE_diesel_GPU_lifespan / (dGPU_OpH*dGPU_OpD);
-    const assumptions_GSE_diesel_GPU_co2_emmissions = 2.3;
-    const assumptions_GSE_diesel_GPU_diesel_cost = 1;
-
     let electricityPrice, co2_kWh;
+
     if (countries.includes(airportCountry)) {
         const countryIndex = countries.indexOf(airportCountry);
         [electricityPrice, co2_kWh] = countryMatrix[countryIndex];
+        console.log(`\ngeneral_input vector for ${airportCountry}:`);
+        console.log(`Electricity price (USD/kWh): ${electricityPrice}`);
+        console.log(`CO2 emissions (g/kWh): ${co2_kWh}`);
+        console.log(`WACC: ${wacc}\n`);
     } else {
         console.log(`Country ${airportCountry} not found in the database.\n`);
     }
 
-    const assumptions_ProdScen_energy_SMR_H2_CO2 = 8000;
-    const assumptions_ProdScen_energy_GH2_price = 4.3;
+    console.log("gse_input vector:");
+    console.log(`Current GPU fleet: ${GPU_fleet}`);
+    console.log(`Daily operation hours: ${dGPU_OpH}`);
+    console.log(`Days of operation per year: ${dGPU_OpD}\n`);
 
-    const assumptions_ProdScen_electrolyser_cost_kW = 1945.5;
-    const assumptions_ProdScen_electrolyser_stack_price = 0.15;
-    const assumptions_ProdScen_electrolyser_consumption = 44.23;
-    const assumptions_ProdScen_electrolyser_maintenance_cost = 0.03;
-    const assumptions_ProdScen_electrolyser_stack_lifespan = 35000;
-    const assumptions_ProdScen_electrolyser_stack_depreciation =  assumptions_ProdScen_electrolyser_stack_lifespan / (assumptions_ProdScen_electrolyser_hour_op * assumptions_ProdScen_electrolyser_day_op);
-    const assumptions_ProdScen_electrolyser_hour_op = 20;
-    const assumptions_ProdScen_electrolyser_day_op = 365;
-    const assumptions_ProdScen_electrolyser_m2_kw = 0.04;
+    const assumptions_GSE_H2_GPU = [
+        [2025, 2026, 2027, 2028, 2029, 2030],
+        [4.3, 4.3, 4.3, 4.3, 4.3, 4.3],
+        [350000, 260000, 240000, 220000, 200000, 180000],
+        [16.5, 16.5, 16.5, 16.5, 16.5, 16.5],
+        [20000, 20000, 20000, 20000, 20000, 20000],
+        [2.7, 2.7, 2.7, 2.7, 2.7, 2.7]
+    ];
 
+    console.log("assumptions_GSE_H2_GPU:");
+    console.log("H2 GPU                             2025      2026      2027      2028      2029      2030");
+    const labelsH2 = [
+        "H2 hourly consumption (kg/h)",
+        "Unit price (USD)",
+        "Stack price (% of unit price)",
+        "Lifespan (h)",
+        "Maintenance costs as % of CAPEX"
+    ];
+    labelsH2.forEach((label, index) => {
+        console.log(`${label.padEnd(30)} ${assumptions_GSE_H2_GPU[index + 1].join('      ')}`);
+    });
 
-    const h2GPUsInService = Array(6).fill(0);
+    const assumptions_GSE_diesel_GPU = [
+        [20, 20, 20, 20, 20, 20],
+        [70000, 70000, 70000, 70000, 70000, 70000],
+        [20000, 20000, 20000, 20000, 20000, 20000],
+        [0.15, 0.15, 0.15, 0.15, 0.15, 0.15],
+        [2.3, 2.3, 2.3, 2.3, 2.3, 2.3],
+        [1, 1, 1, 1, 1, 1]
+    ];
+
+    const lifespan = assumptions_GSE_diesel_GPU[2][0];
+    const fullDepreciation = Math.round(lifespan / (dGPU_OpH * dGPU_OpD));
+
+    assumptions_GSE_diesel_GPU.splice(4, 0, Array(6).fill(fullDepreciation));
+
+    console.log("\nassumptions_GSE_diesel_GPU:");
+    console.log("Diesel GPU                        2025      2026      2027      2028      2029      2030");
+    const labelsDiesel = [
+        "Diesel hourly consumption (kg/h)",
+        "Unit price (USD)",
+        "Lifespan (h)",
+        "Maintenance costs as % of CAPEX",
+        "Full depreciation (years)",
+        "CO2 emissions/kg fuel (kg)",
+        "Diesel cost (USD/kg)"
+    ];
+    labelsDiesel.forEach((label, index) => {
+        console.log(`${label.padEnd(35)} ${assumptions_GSE_diesel_GPU[index].join('      ')}`);
+    });
+
+    const assumptions_production_scenario_energy = [
+        [electricityPrice, electricityPrice, electricityPrice, electricityPrice, electricityPrice, electricityPrice],
+        [co2_kWh, co2_kWh, co2_kWh, co2_kWh, co2_kWh, co2_kWh],
+        [8000, 8000, 8000, 8000, 8000, 8000],
+        [4.3, 4.3, 4.3, 4.3, 4.3, 4.3]
+    ];
+
+    console.log("\nassumptions_production_scenario_energy:");
+    console.log("Energy                                      2025      2026      2027      2028      2029      2030");
+    const labelsEnergy = [
+        "Electricity price (USD/kWh)",
+        "CO2 emission of electricity generation (g/kWh)",
+        "SMR hydrogen carbon intensity (g/kg H2)",
+        "GH2 price (off-site production) (USD/kg)"
+    ];
+    labelsEnergy.forEach((label, index) => {
+        console.log(`${label.padEnd(45)} ${assumptions_production_scenario_energy[index].join('      ')}`);
+    });
+
+    const assumptions_production_scenario_electrolyser = [
+        [1945.50, 1945.50, 1945.50, 1945.50, 1945.50, 1945.50],
+        [0.15, 0.15, 0.15, 0.15, 0.15, 0.15],
+        [44.23, 44.23, 44.23, 44.23, 44.23, 44.23],
+        [0.03, 0.03, 0.03, 0.03, 0.03, 0.03],
+        [35000, 35000, 35000, 35000, 35000, 35000],
+        [20, 20, 20, 20, 20, 20],
+        [365, 365, 365, 365, 365, 365],
+        [0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
+    ];
+
+    const stackLifespan = assumptions_production_scenario_electrolyser[4][0];
+    const dailyHours = assumptions_production_scenario_electrolyser[5][0];
+    const yearlyDays = assumptions_production_scenario_electrolyser[6][0];
+
+    const stackDepreciation = Math.round(stackLifespan / (dailyHours * yearlyDays));
+    assumptions_production_scenario_electrolyser.splice(5, 0, Array(6).fill(stackDepreciation));
+
+    console.log("\nassumptions_production_scenario_electrolyser:");
+    console.log("Electrolyser Parameters                  2025      2026      2027      2028      2029       2030");
+    const labelsElectrolyser = [
+        "Electrolyser unit cost/kW (USD)",
+        "Electrolyser stack % of CAPEX",
+        "Electrolyser energy consumption (kWh/kg)",
+        "Electrolyser maintenance (% of CAPEX)",
+        "Electrolyser stack lifespan (h)",
+        "Electrolyser stack depreciation (y)",
+        "Electrolyser daily hours of operation",
+        "Electrolyser yearly days of operation",
+        "m²/kW electrolysis"
+    ];
+    labelsElectrolyser.forEach((label, index) => {
+        console.log(`${label.padEnd(45)} ${assumptions_production_scenario_electrolyser[index].join('      ')}`);
+    });
+
     const initialH2GPUsInService = Math.round((REPfleet * GPU_fleet) / 6);
+    const h2GPUsInService = Array(6).fill(0);
     h2GPUsInService[0] = initialH2GPUsInService;
-    for (let i = 1; i < 5; i++) {h2GPUsInService[i] = h2GPUsInService[i - 1] + initialH2GPUsInService;}
+
+    for (let i = 1; i < 5; i++) {
+        h2GPUsInService[i] = h2GPUsInService[i - 1] + initialH2GPUsInService;
+    }
+
     const maxH2GPUs = Math.round(REPfleet * GPU_fleet);
     h2GPUsInService[5] = h2GPUsInService[4] + initialH2GPUsInService > maxH2GPUs ? maxH2GPUs : h2GPUsInService[4] + initialH2GPUsInService;
+
     const dieselGPUsInService = h2GPUsInService.map(service => GPU_fleet - service);
-    const h2ConsumptionPerYear = h2GPUsInService.map((service) => service * assumptions_gse_h2_gpu_h2_consumption * dGPU_OpH * dGPU_OpD);
-    const dieselConsumptionPerYear = dieselGPUsInService.map((service) => service * assumptions_GSE_diesel_GPU_diesel_consumption * dGPU_OpH * dGPU_OpD);
+
+    const h2ConsumptionPerYear = h2GPUsInService.map((service, index) => service * assumptions_GSE_H2_GPU[1][index] * dGPU_OpH * dGPU_OpD);
+    const dieselConsumptionPerYear = dieselGPUsInService.map((service, index) => service * assumptions_GSE_diesel_GPU[0][index] * dGPU_OpH * dGPU_OpD);
+
+    const calculations_GSE_fuel_consumption = [
+        h2GPUsInService,
+        dieselGPUsInService,
+        h2ConsumptionPerYear,
+        dieselConsumptionPerYear
+    ];
+
+    console.log("\ncalculations_GSE_fuel_consumption:");
+    console.log("Parameter                                   2025      2026      2027      2028      2029      2030");
+    const labelsFuel = [
+        "H2 GPUs in service",
+        "Diesel GPUs in service",
+        "H2 consumption of fleet (kg/year)",
+        "Diesel consumption of fleet (kg/year)"
+    ];
+    labelsFuel.forEach((label, index) => {
+        console.log(`${label.padEnd(45)} ${calculations_GSE_fuel_consumption[index].join('      ')}`);
+    });
 
     const h2ProductionCapacityRequired = h2ConsumptionPerYear.map((consumption, index) => Math.round((consumption * 1.2) / (assumptions_production_scenario_electrolyser[6][index] * assumptions_production_scenario_electrolyser[7][index])));
     const electrolysisCapacityRequired = h2ProductionCapacityRequired.map((capacity, index) => Math.round(capacity * assumptions_production_scenario_electrolyser[2][index]));
@@ -228,13 +340,13 @@ function computeModel() {
     });
 
     const capexH2GPU = Array(6).fill(0);
-    capexH2GPU[0] = calculations_GSE_fuel_consumption[0][0] * assumptions_gse_h2_gpu_h2_price[0];
+    capexH2GPU[0] = calculations_GSE_fuel_consumption[0][0] * assumptions_GSE_H2_GPU[2][0];
     for (let i = 1; i < 6; i++) {
-        capexH2GPU[i] = (calculations_GSE_fuel_consumption[0][i] - calculations_GSE_fuel_consumption[0][i - 1]) * assumptions_gse_h2_gpu_h2_price[i];
+        capexH2GPU[i] = (calculations_GSE_fuel_consumption[0][i] - calculations_GSE_fuel_consumption[0][i - 1]) * assumptions_GSE_H2_GPU[2][i];
     }
 
     const h2Cost = h2ConsumptionPerYear.map((consumption, index) => consumption * calculations_production_scenarios_yearly_electrolyser_costs[5][index]);
-    const maintenance = h2GPUsInService.map((service) => service * assumptions_gse_h2_gpu_h2_price * assumptions_gse_h2_gpu_maintenance_cost / 100);
+    const maintenance = h2GPUsInService.map((service, index) => service * assumptions_GSE_H2_GPU[2][index] * assumptions_GSE_H2_GPU[5][index] / 100);
     const depreciation = capexH2GPU.map(cost => cost / fullDepreciation);
     const totalH2GPU = capexH2GPU.map((cost, index) => cost + h2Cost[index] + maintenance[index] + depreciation[index]);
 
@@ -354,48 +466,38 @@ function computeModel() {
 
     console.log(`\nNPV value: ${npvValue.toFixed(0)}`);
 
+    const years = [2025, 2026, 2027, 2028, 2029, 2030];
     renderCO2Chart(years, dieselEmissions, h2GPUSMREmissions, h2GPUSelfProductionEmissions);
     renderCashFlowChart(years, productionInfrastructure, h2Fleet);
 
      // Display results in the table
-    const tableBody = document.getElementById('resultsTableBody');
-    tableBody.innerHTML = '';
-
-    const formatNumber = (number) => {
-        let absNumber = Math.abs(number);
-        let formattedNumber = absNumber.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        return number < 0 ? `(-) $${formattedNumber}` : `$${formattedNumber}`;
-    };
-
-    const fixedWidth = '150px'; // Define the fixed width for the columns
-
-    for (let i = 0; i < years.length; i++) {
+     const tableBody = document.getElementById('resultsTableBody');
+     tableBody.innerHTML = '';
+ 
+     for (let i = 0; i < years.length; i++) {
         const row = document.createElement('tr');
         const yearCell = document.createElement('td');
         yearCell.textContent = years[i];
         row.appendChild(yearCell);
-    
+
         const productionInfrastructureCell = document.createElement('td');
-        productionInfrastructureCell.textContent = formatNumber(productionInfrastructure[i]);
-        productionInfrastructureCell.style.width = fixedWidth;
+        productionInfrastructureCell.textContent = `$${productionInfrastructure[i].toFixed(2)}`;
         row.appendChild(productionInfrastructureCell);
-    
+
         const h2FleetCell = document.createElement('td');
-        h2FleetCell.textContent = formatNumber(h2Fleet[i]);
-        h2FleetCell.style.width = fixedWidth;
+        h2FleetCell.textContent = `$${h2Fleet[i].toFixed(2)}`;
         row.appendChild(h2FleetCell);
-    
+
         const totalCashFlowCell = document.createElement('td');
-        totalCashFlowCell.textContent = formatNumber(totalCashFlow[i]);
-        totalCashFlowCell.style.width = fixedWidth;
+        totalCashFlowCell.textContent = `$${totalCashFlow[i].toFixed(2)}`;
         row.appendChild(totalCashFlowCell);
-    
+
         tableBody.appendChild(row);
     }
 
     // Display NPV value
     const npvElement = document.getElementById('npvValue');
-    npvElement.textContent = `NPV Value: ${formatNumber(npvValue)}`;
+    npvElement.textContent = `NPV Value: $${npvValue.toFixed(2)}`;
 
     const totalDieselEmissions = dieselEmissions.reduce((sum, value) => sum + value, 0);
     const totalReductionH2GPUSelf = reductionH2GPUSelf.reduce((sum, value) => sum + value, 0);
