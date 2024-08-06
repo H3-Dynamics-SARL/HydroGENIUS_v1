@@ -472,26 +472,37 @@ function computeModel() {
 
      // Display results in the table
      const tableBody = document.getElementById('resultsTableBody');
-     tableBody.innerHTML = '';
- 
-     for (let i = 0; i < years.length; i++) {
+    tableBody.innerHTML = '';
+
+    const formatNumber = (number) => {
+        let absNumber = Math.abs(number);
+        let formattedNumber = absNumber.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        return number < 0 ? `(-) $${formattedNumber}` : `$${formattedNumber}`;
+    };
+
+    const fixedWidth = '150px'; // Define the fixed width for the columns
+
+    for (let i = 0; i < years.length; i++) {
         const row = document.createElement('tr');
         const yearCell = document.createElement('td');
         yearCell.textContent = years[i];
         row.appendChild(yearCell);
-
+    
         const productionInfrastructureCell = document.createElement('td');
-        productionInfrastructureCell.textContent = `$${productionInfrastructure[i].toFixed(2)}`;
+        productionInfrastructureCell.textContent = formatNumber(productionInfrastructure[i]);
+        productionInfrastructureCell.style.width = fixedWidth;
         row.appendChild(productionInfrastructureCell);
-
+    
         const h2FleetCell = document.createElement('td');
-        h2FleetCell.textContent = `$${h2Fleet[i].toFixed(2)}`;
+        h2FleetCell.textContent = formatNumber(h2Fleet[i]);
+        h2FleetCell.style.width = fixedWidth;
         row.appendChild(h2FleetCell);
-
+    
         const totalCashFlowCell = document.createElement('td');
-        totalCashFlowCell.textContent = `$${totalCashFlow[i].toFixed(2)}`;
+        totalCashFlowCell.textContent = formatNumber(totalCashFlow[i]);
+        totalCashFlowCell.style.width = fixedWidth;
         row.appendChild(totalCashFlowCell);
-
+    
         tableBody.appendChild(row);
     }
 
