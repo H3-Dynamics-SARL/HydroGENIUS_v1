@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Dashboard - HydroGENIUS</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src="src/js/L.Path.Transform.js"></script>
+    <script src="src/js//Edit.Rectangle.Rotate.js"></script>
+    <style>
+        .leaflet-edit-marker-selected {
+            background-color: none!important;
+            border: none!important;
+            height:0%!important;
+        }
+    </style>
+</head>
+
+<body id="page-top">
+     <!-- <div id="loginContainer" class="login-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p id="errorMessage" class="error-message"></p>
+    </div> -->
+    <!-- <div id="protectedContent" class="protected-content" style="display:none;"> -->
+    <div id="wrapper">
+        <nav style="background: #000000;" class="navbar align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0 navbar-dark">
+            <div class="container-fluid d-flex flex-column p-0"><a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="#">
+                    <div class="sidebar-brand-icon"><img src="assets/img/047f54_8858bbf147bd4a17b9b24145a7e38668~mv2_d_3508_2480_s_4_2.webp" width="190" height="62"></div>
+                    <div class="sidebar-brand-text mx-3"></div>
+                </a>
+                <hr class="sidebar-divider my-0">
+                <ul class="navbar-nav text-light" id="accordionSidebar">
+                    <li class="nav-item"><a class="nav-link active" href="index.html"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a><a class="nav-link" href="login.html"><i class="far fa-sun"></i><span>[DEV]Login</span></a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"></li>
+                </ul>
+                <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>
+            </div>
+        </nav>
+        <div class="d-flex flex-column" id="content-wrapper">
+            <div id="content">
+                <nav style="background: #00BFFF;" class="navbar navbar-expand shadow mb-4 topbar">
+                    <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle me-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
+                        <ul class="navbar-nav flex-nowrap ms-auto">
+                            <li class="nav-item dropdown d-sm-none no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><i class="fas fa-search"></i></a>
+                                <div class="dropdown-menu dropdown-menu-end p-3 animated--grow-in" aria-labelledby="searchDropdown">
+                                    <form class="me-auto navbar-search w-100">
+                                        <div class="input-group"><input class="bg-light border-0 form-control small" type="text" placeholder="Search for ..."><button class="btn btn-primary" type="button"><i class="fas fa-search"></i></button></div>
+                                    </form>
+                                </div>
+                            </li>
+                            <div class="d-none d-sm-block topbar-divider"></div>
+                            <li class="nav-item dropdown no-arrow">
+                                <div class="nav-item dropdown no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><span style="color: #ffffff;" class="d-none d-lg-inline me-2 small">Alexy Roman (H3D Airport)</span><i style="color: #ffffff;" class="far fa-user"></i></a>
+                                    <div class="dropdown-menu shadow dropdown-menu-end animated--grow-in"><a class="dropdown-item" href="#"><i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Profile</a><a class="dropdown-item" href="#"><i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Settings</a><a class="dropdown-item" href="#"><i class="fas fa-list fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Activity log</a>
+                                        <div class="dropdown-divider"></div><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Logout</a>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                <div class="container-fluid">
+                    <div class="d-sm-flex justify-content-between align-items-center mb-4">
+                        <h1 class="text-dark mb-0" style="font-weight: bold;">Dashboard</h1><a style="background: #00BFFF;border-color: #00BFFF;" class="btn btn-primary btn-sm d-none d-sm-inline-block" role="button" href="#"><i class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</a>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col">
+                            <h2>Cash Flows</h2>
+                        </div>
+                    </div>
+                    <div class="row d-flex align-items-center" style="margin-top: 12px;margin-bottom: 24px;">
+                        <div class="col-4">
+                            <div class="card shadow border-left-primary py-2">
+                                <div class="card-body">
+                                    <div class="row g-0 align-items-center">
+                                        <div class="col me-2">
+                                            <div class="text-uppercase text-primary fw-bold text-xs mb-1"><p style="color:#00BFFF; font-weight:bold; font-size: 18px;">Airport Data</p></div>
+                                            <form id="inputForm">
+                                                <select class="form-select" required="" style="width: 50%;margin-bottom: 12px;margin-top: 12px;" id="airportCountry" name="airportCountry">
+                                                    <option value="France">France</option>
+                                                    <option value="Spain">Spain</option>
+                                                </select>
+
+                                                <label for="wacc">WACC:</label>
+                                                <input class="form-control" type="number" step="0.01" id="wacc" name="wacc" value="0.08" style="width: 50%;margin-bottom: 12px;" placeholder="WACC" min="0">
+
+                                                <label for="GPU_fleet">Number of GPU:</label>
+                                                <input class="form-control" type="number" id="GPU_fleet" name="GPU_fleet" value="21" style="width: 50%;margin-bottom: 12px;" placeholder="Number of GPU" min="0">
+                                                
+                                                <label for="dGPU_OpH">Daily GPU Operation Hours:</label>
+                                                <input class="form-control" type="number" id="dGPU_OpH" name="dGPU_OpH" value="6" style="width: 50%;margin-bottom: 12px;" placeholder="Daily GPU Operation Hours" min="0">
+
+                                                <label for="dGPU_OpD">Days of GPU Operation Per Year:</label>
+                                                <input class="form-control" type="number" id="dGPU_OpD" name="dGPU_OpD" value="365" style="width: 50%;margin-bottom: 12px;" placeholder="Days of GPU Operation Per Year" min="0">
+                                                
+                                                <label for="REPfleet">GPU Fleet Replacement Target:</label>
+                                                <input class="form-control" type="number" step="0.01" id="REPfleet" name="REPfleet" value="0.6" style="width: 50%;margin-bottom: 12px;" placeholder="GPU Fleet Replacement Target" min="0" max="1">
+                                                
+                                                <button style="background: #00BFFF;border-color: #00BFFF;" class="btn btn-primary" type="button" onclick="computeModel()">Compute</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex justify-content-center align-items-center" style="width: 96px;"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-arrows-diff" style="color: var(--bs-emphasis-color);font-size: 48px;">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M11 16h10"></path>
+                                <path d="M11 16l4 4"></path>
+                                <path d="M11 16l4 -4"></path>
+                                <path d="M13 8h-10"></path>
+                                <path d="M13 8l-4 4"></path>
+                                <path d="M13 8l-4 -4"></path>
+                            </svg></div>
+                        <div class="col">
+                            <div class="card shadow border-left-info py-2">
+                                <div class="card-body", style="height: 490px">
+                                    <div class="row g-0 align-items-center">
+                                        <div class="col me-2">
+                                            <div class="card shadow mb-4">
+                                                <div class="card-header py-3">
+                                                    <h6 style="color:#00BFFF; font-weight:bold" class="fw-bold m-0">Financial Results</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered" id="resultsTable">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Year</th>
+                                                                    <th>Production Infrastructure</th>
+                                                                    <th>H2 Fleet</th>
+                                                                    <th>Total Cash Flow</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="resultsTableBody">
+                                                                <!-- Rows will be inserted here by computeModel function -->
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div id="npvValue" class="mt-3">
+                                                        <!-- NPV value will be displayed here by computeModel function -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row d-xl-flex justify-content-xl-center">
+                        <div class="col-8">
+                            <h5 class="text-center">Yearly cash flows for project (USD/year)</h5>
+                            <div>                    
+                                <canvas id="cashFlowChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col">
+                            <h2>Carbon Impact</h2>
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-lg-center align-items-lg-center" style="margin-top: 12px;margin-bottom: 24px;">
+                        <div class="col-6">
+                            <h6 class="text-center">CO2 emissions for equivalent fleet (t/year)</h6>
+                            <div>
+                                <canvas id="co2Chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex justify-content-center align-items-center" style="width: 48px;"></div>
+                        <div class="col">
+                            <h6 class="text-center">Total CO2 abated from diesel in 5 years (tC02/year)</h6>
+                            <div class="card shadow border-left-info py-2">
+                                <div class="card-body">
+                                    <div id="emissionResults">
+                                            <!-- Emission results will be displayed here by computeModel function -->
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row d-flex align-items-center">
+                        <div class="col mb-4">
+                            <h2>Space occupied by electrolysers</h2>
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="text-primary fw-bold m-0">Map</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="map" style="width: 100%; height: 600px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="bg-white sticky-footer">
+                <div class="container my-auto">
+                    <div class="text-center my-auto copyright"><span>Copyright © HydroGENIUS 2024</span></div>
+                </div>
+            </footer>
+        </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
+    </div>
+    <!-- </div> -->
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/theme.js"></script>
+    <script src="scripts.js"></script>
+    <!-- <script src="login.js"></script> -->
+    </script>
+</body>
+
+</html>
